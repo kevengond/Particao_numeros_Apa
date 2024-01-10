@@ -1,69 +1,75 @@
 #include <stdio.h>
 
-// Função auxiliar para imprimir a k-partição
-void printPartition(int set[], int subsetSum[], int n, int k) {
+// Função auxiliar para imprimir uma partição
+void printPartition(int partition[], int n, int k) {
     for (int i = 0; i < k; i++) {
         printf("Subset %d: ", i + 1);
         for (int j = 0; j < n; j++) {
-            if (subsetSum[j] == i + 1) {
-                printf("%d ", set[j]);
-            }
+            if (partition[j] == i)
+                printf("%d ", j + 1);
         }
         printf("\n");
     }
 }
 
-// Função auxiliar para verificar se uma partição é válida
-int isValidPartition(int set[], int n, int subsetSum[], int k) {
-    for (int i = 0; i < n; i++) {
-        int count = 0;
-        for (int j = 0; j < k; j++) {
-            if (subsetSum[j] == set[i]) {
-                count++;
-            }
-        }
-        if (count == 0) {
-            return 0;
-        }
+// Função auxiliar para verificar se todos os subconjuntos têm a mesma soma
+int checkEqualSums(int arr[], int partition[], int n, int k) {
+    int subsetSum[k];
+    
+    // Inicializar a soma de cada subconjunto como 0
+    for (int i = 0; i < k; i++)
+        subsetSum[i] = 0;
+
+    // Calcular a soma de cada subconjunto
+    for (int i = 0; i < n; i++)
+        subsetSum[partition[i]] += arr[i];
+
+    // Verificar se todas as somas são iguais
+    for (int i = 1; i < k; i++) {
+        if (subsetSum[i] != subsetSum[0])
+            return 0; // Soma não é igual
     }
-    return 1;
+
+    return 1; // Todas as somas são iguais
 }
 
-// Função principal para encontrar a k-partição usando força bruta
-int bruteForcePartition(int set[], int n, int k, int subsetSum[]) {
-    if (n == 0) {
-        // Verifica se a partição atual é válida e imprime se for
-        if (isValidPartition(set, n, subsetSum, k)) {
-            printPartition(set, subsetSum, n, k);
-            return 1;
-        }
-        return 0;
+// Função principal para encontrar todas as partições com a mesma soma
+void kPartitionEqualSums(int arr[], int n, int k, int partition[], int index) {
+    // Se todas as partições foram formadas
+    if (index == n) {
+        if (checkEqualSums(arr, partition, n, k))
+            printPartition(partition, n, k);
+        return;
     }
 
-    // Tenta adicionar o elemento atual a cada subconjunto e recursivamente verifica
+    // Tentar adicionar o elemento atual a todas as partições possíveis
     for (int i = 0; i < k; i++) {
-        subsetSum[i] += set[n - 1];
-        if (bruteForcePartition(set, n - 1, k, subsetSum)) {
-            return 1;
-        }
-        subsetSum[i] -= set[n - 1];
+        partition[index] = i;
+        kPartitionEqualSums(arr, n, k, partition, index + 1);
     }
-
-    return 0;
 }
 
-// Função principal
 int main() {
-    int set[] = {1, 2, 3, 4, 5, 6};
-    int n = sizeof(set) / sizeof(set[0]);
-    int k = 3; // Número de partições desejadas
+    int n, k;
 
-    // Verifica se é possível fazer a k-partição usando força bruta
-    int subsetSum[n];
-    if (bruteForcePartition(set, n, k, subsetSum)) {
-        printf("K-partição encontrada.\n");
+    printf("Digite o número de elementos (n): ");
+    scanf("%d", &n);
+
+    int arr[n];
+
+    printf("Digite os elementos:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    printf("Digite o número de partições (k): ");
+    scanf("%d", &k);
+
+    if (n < k) {
+        printf("Não é possível dividir em %d partições.\n", k);
     } else {
-        printf("Não é possível fazer a k-partição.\n");
+        int partition[n];
+        kPartitionEqualSums(arr, n, k, partition, 0);
     }
 
     return 0;

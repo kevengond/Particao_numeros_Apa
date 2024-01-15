@@ -1,42 +1,37 @@
-def is_valid_partition(partitions):
-    all_elements = set()
-    for subset in partitions:
-        for num in subset:
-            if num in all_elements:
-                return False
-            all_elements.add(num)
-    return True
+from itertools import product
 
-def k_partition_recursive(X, k, target_sum, current_partition, result, index):
-    if index == len(X):
-        if all(sum(subset) == target_sum for subset in current_partition):
-            sorted_partitions = [tuple(sorted(subset)) for subset in current_partition]
-            result.add(tuple(sorted(sorted_partitions)))
-        return
+def partition_k(X, k):
+    n = len(X)
+    
+    # Gera todas as combinações possíveis dos índices dos elementos
+    index_combinations = product(range(k), repeat=n)
+    
+    unique_partitions = set()
+    
+    # Verifica se cada combinação atende aos critérios
+    for indices in index_combinations:
+        subsets = [[] for _ in range(k)]
+        
+        # Preenche os subsets com os elementos correspondentes
+        for i, index in enumerate(indices):
+            subsets[index].append(X[i])
+        
+        # Usa tuplas para representar cada subset
+        tuple_subsets = [tuple(subset) for subset in subsets]
+        
+        # Verifica se as somas são iguais e se não há elementos compartilhados entre os subsets
+        sums = [sum(subset) for subset in tuple_subsets]
+        if len(set(sums)) == 1 and len(set().union(*tuple_subsets)) == n:
+            unique_partitions.add(tuple(tuple_subsets))
 
-    for i in range(k):
-        current_partition[i].append(X[index])
-        k_partition_recursive(X, k, target_sum, current_partition, result, index + 1)
-        current_partition[i].remove(X[index])
-
-def k_partition(X, k):
-    total_sum = sum(X)
-    if total_sum % k != 0:
-        return None  # Não é possível encontrar partições com soma igual
-
-    target_sum = total_sum // k
-    result = set()
-    k_partition_recursive(X, k, target_sum, [[] for _ in range(k)], result, 0)
-
-    return list(result) if result else None
+    # Imprime as partições únicas
+    for i, partition in enumerate(unique_partitions):
+        # Ordena os elementos dentro de cada subset
+        formatted_partition = [', '.join(map(str, sorted(subset))) for subset in partition]
+        output = f"{i}: ({'), ('.join(formatted_partition)})"
+        print(output)
 
 # Exemplo de uso
 X = [2, 5, 4, 9, 1, 7, 6, 8]
 k = 3
-partitions = k_partition(X, k)
-
-if partitions:
-    for i, subset in enumerate(partitions):
-        print(f"Subset {i + 1}: {subset}")
-else:
-    print(f"Não é possível encontrar {k} partições com soma igual.")
+partition_k(X, k)
